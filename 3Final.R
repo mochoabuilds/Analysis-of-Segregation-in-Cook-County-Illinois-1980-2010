@@ -33,7 +33,7 @@ cook.df <- read_dta('/Users/mvo/Desktop/cook_stat.dta')
 # peek at data
 head(cook.df)
 
-# construct variables for neighborhood-level % of each group at tract level
+# construct variables for % of each group at tract level
 cook <- cook.df %>%
   mutate(
     blackshare    = (totblk / tractpop)  * 100,
@@ -45,7 +45,7 @@ cook <- cook.df %>%
   # double-check variable construction 
   View(cook)
 
-# construct kernel density estimates for blackshare
+# kernel density estimates for blackshare
 ggplot(cook, aes(x = blackshare)) +
   geom_density(fill = "blue", alpha = 0.4) +
   labs(title = "Density of Blackshare",
@@ -53,11 +53,11 @@ ggplot(cook, aes(x = blackshare)) +
            y = "Density")  +
   theme(plot.title = element_text(size = 14))
 
-  # The kernel density estimate for blackshare skews to the right, suggesting 
+  # The kernel density estimate for black share skews to the right, suggesting 
   # most of Cook County's tracts have a limited African-American population 
   # share, with some areas having a majority share.
   
-# construct kernel density estimates for whiteshare 
+# kernel density estimates for whiteshare 
 ggplot(cook, aes(x = whiteshare)) + 
   geom_density(fill = "orange", alpha = 0.4) + 
   labs(title = "Density of Whiteshare", 
@@ -68,7 +68,7 @@ ggplot(cook, aes(x = whiteshare)) +
   # The estimate for whiteshare presents as bimodal, implying some tracts are 
   # predominantly white, while other tracts have a modest share.
 
-# construct kernel density estimates for nonwhiteshare
+# kernel density estimates for nonwhiteshare
 ggplot(cook, aes(x = nonwhiteshare)) +
   geom_density(fill = "darkgreen", alpha = 0.4) +
   labs(title = "Density of Non-whiteshare", 
@@ -78,16 +78,6 @@ ggplot(cook, aes(x = nonwhiteshare)) +
     
   # The estimate for nonwhiteshare inversely mirrors the whiteshare distribution, 
   # its bimodal shape emblematic of Cook County's racial segregation.
-
-# construct kernel density estimates for all groups
-ggplot(cook) +
-  geom_density(aes(x = blackshare, color = "Black"), size = 1) +
-  geom_density(aes(x = nonwhiteshare, color = "Nonwhite"), size = 1) +
-  geom_density(aes(x = whiteshare, color = "White"), size = 1) +
-  labs(title = "Density of Blackshare / Non-whiteshare / Whiteshare in Cook County", 
-           x = "% of Tract Population", 
-           y = "Density", color = "Group") +
-  theme_minimal()
 
   # Concerns about market forces driving racial concentration may be ruled out 
   # by Shelly v. Kramer (1948), which rules restricted covenants in deeds 
@@ -100,7 +90,7 @@ ggplot(cook) +
   # Other driving forces of segregation include cohort differences in family 
   # structure and unfolding historical events (e.g. pandemic, administration changes).
 
-#################################################################################
+###########################################################################
 # calculate fraction of tracts in each census where ethnicity/race >= 0.8 
 cook <- cook.df %>% 
   mutate(
@@ -109,13 +99,13 @@ cook <- cook.df %>%
     whiteshare = (totwht / tractpop)
   )
 
-  # plot fraction of tracts where blackshare / hispshare / whiteshare >= 0.8 
-  frac_cook <- cook %>%
-    group_by(year) %>%
-    summarise(
-      Frac_Black80 = mean(blackshare >= 0.8, na.rm = TRUE),
-      Frac_Hisp80  = mean(hispshare  >= 0.8, na.rm = TRUE),
-      Frac_White80 = mean(whiteshare >= 0.8, na.rm = TRUE)
+# plot fraction of tracts where blackshare / hispshare / whiteshare >= 0.8 
+frac_cook <- cook %>%
+  group_by(year) %>%
+  summarise(
+    Frac_Black80 = mean(blackshare >= 0.8, na.rm = TRUE),
+    Frac_Hisp80  = mean(hispshare  >= 0.8, na.rm = TRUE),
+    Frac_White80 = mean(whiteshare >= 0.8, na.rm = TRUE)
     ) %>%
     pivot_longer(
       cols      = starts_with("Frac_"),
@@ -132,7 +122,7 @@ cook <- cook.df %>%
     geom_point(size = 3) +
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
     labs(
-      title = "Race/Ethnicity Share Greater Than 80%",
+      title = "Fraction of Tracts Greater Than 80%",
       subtitle = "Cook County, 1970-2010",
       x     = "Year",
       y     = "Fraction of Tracts",
@@ -153,6 +143,7 @@ cook <- cook.df %>%
   select(year, tractpop, totwht, totblk, tothisp) %>%
   filter(tractpop > 0)
 
+  #########################
   # dissimilarity function
   dissimilarity_index <- function(g1, g2) 
     {
@@ -178,13 +169,12 @@ ggplot(di_long, aes(x = year, y = index, color = pair)) +
   geom_line(size = 1) +
   geom_point() +
   labs(
-    title = "Dissimilarity Index in Cook County (1970-2010)",
+    title = "Dissimilarity Index in Cook County, 1970-2010",
     x     = "Year",
     y     = "Dissimilarity Index (0-1)",
     color = "Group Comparison"
   ) +
   theme_minimal()
-
 
 #######################################################
 
@@ -202,13 +192,7 @@ cook_edu <- cook.df %>%
   # double-check variable construction 
   View(cook_edu)
 
-# construct per capita hh income variable for use in correlation below
-cook_pchhinc <- cook.df %>%
-  mutate(
-    pchhinc            = (agghhinc/numhh),
-  )
-
-# construct log(pchhinc) for use in correlation below
+# data prep -- construct per capita hh income variable, log(pchhinc) 
 cook_pchhinc <- cook.df %>%
   mutate(
     pchhinc            = (agghhinc/numhh),
@@ -218,7 +202,7 @@ cook_pchhinc <- cook.df %>%
   # double-check variable construction 
   View(cook_pchhinc)
 
-# prepare data for racial/ethnic x socioeconomic status analysis
+# prepare data for socioeconomic analysis
 cook_ses <- cook.df %>%
   mutate(
     blackshare        = (totblk / tractpop),
@@ -247,7 +231,7 @@ ggplot(cook_ses, aes(x = blackshare, y = log_pchhinc)) +
   labs(
     title = "Black Share x Log Household Income",
         x = "Black Share (% of tract population)",
-        y = "Log Average Household Income") +
+        y = "Log Mean Household Income") +
   theme_minimal()
 
 # hispanic share x log household income
@@ -257,7 +241,7 @@ ggplot(cook_ses, aes(x = hispshare, y = log_pchhinc)) +
   labs(
     title = "Hispanic Share x Log Household Income",
         x = "Hispanic Share (% of tract population)", 
-        y = "Log Average Household Income") +
+        y = "Log Mean Household Income") +
   theme_minimal()
   
 # white share x log household income
@@ -266,7 +250,7 @@ ggplot(cook_ses, aes(x = whiteshare, y = log_pchhinc)) +
   geom_smooth(method = "lm", color = "black") +
   labs(title = "White Share x Household Income",
            x = "White Share (% of tract population)", 
-           y = "Log Average Household Income") +
+           y = "Log Mean Household Income") +
   theme_minimal()
 
 ##########################
@@ -277,7 +261,7 @@ ggplot(cook_ses, aes(x = blackshare, y = share_ba)) +
   labs(
     title = "Black Share x Educational Attainment",
         x = "Black Share (% of tract population)", 
-        y = "BA/BS Degree or Higher") +
+        y = "Bachelor's Degree or Higher") +
   theme_minimal()
 
 # hisp share x education
@@ -287,7 +271,7 @@ ggplot(cook_ses, aes(x = hispshare, y = share_ba)) +
   labs(
     title = "Hispanic Share x Educational Attainment",
         x = "Hispanic Share (% of tract population)", 
-        y = "BA/BS Degree or Higher") +
+        y = "Bachelor's Degree or Higher") +
   theme_minimal()
 
 # white share x education 
@@ -297,9 +281,8 @@ ggplot(cook_ses, aes(x = whiteshare, y = share_ba)) +
   labs(
     title = "White Share x Educational Attainment",
     x = "White Share (proportion of tract population)", 
-    y = "BA/BS Degree or Higher") +
+    y = "Bachelor's Degree or Higher") +
   theme_minimal()
-
 
 #########################################
 #                                       
@@ -316,7 +299,7 @@ schools.df <- read_dta('/Users/mvo/Desktop/cook_schools_sat_2023.dta')
 # peek at data
 head(schools.df)
 
-# display fraction of typical HS that is low income as tibble
+# display fraction of high schools that are low income as tibble
 schools.df %>%
   summarise(
     mean_low   = mean(percent_lowinc, na.rm = TRUE),
@@ -324,7 +307,7 @@ schools.df %>%
     sd_low     = sd(percent_lowinc, na.rm = TRUE)
   )
 
-# plot low-income share of students across cook county schools
+# plot low-income share of students across cook county
 ggplot(schools.df, aes(x = percent_lowinc)) +
   geom_histogram(binwidth = 5, fill = "steelblue", color = "white") +
   labs(
@@ -387,9 +370,9 @@ ggplot(schools.df, aes(x = percent_white, y = percent_lowinc)) +
   # by geography, or in this case school districts.
 
 ##############################################################################
-#
+
 # comparing high school test scores and more across Chicago vs. Suburban Cook
-#
+
 ##############################################################################
 
 schools.df <- schools.df %>%
@@ -408,16 +391,16 @@ schools.df %>%
     avg_white     = mean(percent_white, na.rm = TRUE),
   )
 
-# compare low income share to SAT math scores across regions  
+# compare low income share to SAT math across regions  
 ggplot(schools.df, aes(x = percent_lowinc, y = satmathaveragescore, color = region)) +
   geom_point(alpha = 0.6) +
   geom_smooth(method = "lm", se = FALSE) +
   labs(title = "SAT Math vs. Low-Income Share",
            x = "% Low-Income Students",
-           y = "Average SAT Math Score") +
+           y = "Average SAT Math") +
   theme_minimal()
 
-# compare low income share to SAT reading scores across regions  
+# compare low income share to SAT scores across regions
 ggplot(schools.df, aes(x = percent_lowinc, y = satreadingaveragescore , color = region)) +
   geom_point(alpha = 0.6) +
   geom_smooth(method = "lm", se = FALSE) +
@@ -426,11 +409,10 @@ ggplot(schools.df, aes(x = percent_lowinc, y = satreadingaveragescore , color = 
            y = "Average SAT Reading Score") +
   theme_minimal()
 
-  
 ############################################
-#                         
+                        
 # high school test scores to housing prices               
-#                         
+                         
 ############################################
 
 # load data 
@@ -446,7 +428,7 @@ prices <- prices %>%
 schools <- schools %>% 
   dplyr::select(city, school_name, satmathaveragescore, satreadingaveragescore)
 
-# remove Chicago submarket - use regex() for finer control of the matching behaviour
+# remove Chicago submarket - use regex() for finer control of matching behaviour
 suburban_prices <- prices %>% 
   filter(!str_detect(submarket, regex("^Chicago--|^City of Chicago$", ignore_case = TRUE))) %>%
   filter(!is.na(median_price_2023))
@@ -584,24 +566,24 @@ stargazer(versus.df,
 #                         
 ################################################################
 
-# high school drop out rates for females x SAT math scores
+# high school drop out rates for females x SAT math 
 ggplot(schools.df, aes(x = hs_dropout_fem, y = satmathaveragescore)) +
   geom_point(alpha = 0.6) +
   geom_smooth(method ="lm", se = FALSE, color = "steelblue") + 
   labs(
     title = "HS Dropout Rates for Females x SAT Math Scores",
     x     = "% Dropout Rate",
-    y     = "SAT Math Score"
+    y     = "SAT Math"
   )
 
-# graduation rates x SAT math scores 
+# graduation rates x SAT math  
 ggplot(schools.df, aes(x = avg_class_size, y = satmathaveragescore)) +
   geom_point(alpha = 0.6) +
   geom_smooth(method ="lm", se = FALSE, color = "steelblue") + 
   labs(
     title = "Average Class Size x SAT Math Scores",
     x     = "Average Class Size #",
-    y     = "SAT Math Score"
+    y     = "SAT Math"
   )
 
     # The fitted regression line slopes upward, implying that larger class sizes 
@@ -617,14 +599,14 @@ ggplot(schools.df, aes(x = avg_class_size, y = satmathaveragescore)) +
     # a more rigorous analysis controlling for income, racial composition and more 
     # would be required to isolate the true impact of class size on SAT scores. 
 
-# % housing insecure x SAT math scores
+# % housing insecure x SAT math 
 ggplot(schools.df, aes(x = percent_homeless, y = satmathaveragescore)) +
   geom_point(alpha = 0.6) +
   geom_smooth(method ="lm", se = FALSE, color = "steelblue") + 
   labs(
     title = "Rates of Housing Insecurity x SAT Math Scores",
     x     = "% Housing Insecurity",
-    y     = "SAT Math Score"
+    y     = "SAT Math"
   )
 
     # The regression line slopes sharply downward, meaning that schools with more 
